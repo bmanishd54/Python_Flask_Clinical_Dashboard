@@ -1,0 +1,16 @@
+# Python environment and cache
+venv/
+__pycache__/
+*.pyc
+
+# Clinical Data (Prevents pushing massive or sensitive files)
+*.sas7bdat
+*.csv
+*.docx
+SDTM_SAS/
+ADAM_SAS/
+
+# OS and IDE files
+.vscode/
+.idea/
+.DS_Store
