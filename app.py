@@ -17,7 +17,7 @@ class CustomJSONProvider(DefaultJSONProvider):
 app = Flask(__name__)
 app.json = CustomJSONProvider(app)
 
-DATA_PATH = "./SDTM_SAS/"
+DATA_PATH = "./SDTM_ADAM_SAS/"
 
 DOMAINS = {
     "SDTM": {
