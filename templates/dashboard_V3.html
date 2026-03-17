@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PharmaSUG 2026 | Ephicacy Innovation</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        :root {
+            --ephicacy-blue: #004a99;
+            --vibrant-gradient: linear-gradient(135deg, #004a99 0%, #3b82f6 100%);
+            --sidebar-bg: #ffffff;
+            --main-bg: #f1f5f9;
+            --text-dark: #0f172a;
+            --border: #e2e8f0;
+        }
+
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--main-bg); display: flex; margin: 0; height: 100vh; overflow: hidden; }
+
+        /* Sidebar & Logo Width Fix */
+        .sidebar { width: 360px; background-color: var(--sidebar-bg); border-right: 3px solid var(--ephicacy-blue); display: flex; flex-direction: column; z-index: 1000; }
+        .logo-header { padding: 30px 20px; border-bottom: 1px solid var(--border); text-align: center; cursor: pointer; }
+        
+        /* Fixed Width Logic */
+        .logo-header img { 
+            max-width: 100%; /* Prevents logo from going outside sidebar */
+            height: auto; 
+            max-height: 100px;
+            object-fit: contain; 
+        }
+
+        .nav-container { flex-grow: 1; overflow-y: auto; padding: 20px 15px; }
+        .nav-container::-webkit-scrollbar { width: 5px; }
+        .nav-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+        .tab { padding: 12px 18px; cursor: pointer; border-radius: 10px; margin-bottom: 8px; font-weight: 500; color: var(--text-dark); transition: all 0.3s ease; font-size: 0.85rem; border: 1px solid transparent; }
+        .tab:hover { background-color: #f8fafc; color: var(--ephicacy-blue); border-color: #3498db; }
+        .tab.active { background: var(--vibrant-gradient); color: white; font-weight: 600; box-shadow: 0 4px 15px rgba(0, 74, 153, 0.25); }
+
+        .main-content { flex-grow: 1; overflow-y: auto; padding: 50px; box-sizing: border-box; position: relative; }
+        
+        /* Conference Welcome Page */
+        #welcome-page { position: absolute; top: 30px; left: 30px; right: 30px; bottom: 30px; background: white; border-radius: 20px; padding: 50px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); z-index: 10; display: flex; flex-direction: column; align-items: center; overflow-y: auto; }
+        
+        .pharmasug-logo { height: 80px; width: auto; margin-bottom: 20px; }
+        
+        #welcome-page h1 { color: var(--ephicacy-blue); font-size: 1.8rem; text-align: center; margin-bottom: 15px; line-height: 1.3; max-width: 900px; }
+        #welcome-page .abstract-meta { color: #64748b; font-weight: 600; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 25px; margin-top: 20px; width: 100%; max-width: 1000px; }
+        .info-card { padding: 25px; background: #f8fafc; border-radius: 15px; border-left: 5px solid var(--ephicacy-blue); }
+        .info-card h3 { margin: 0 0 10px 0; color: var(--ephicacy-blue); font-size: 1.1rem; }
+        .info-card p { margin: 0; color: #475569; font-size: 0.95rem; line-height: 1.5; }
+
+        .card { background: white; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 40px; overflow: hidden; border: 1px solid var(--border); }
+        .card-header { background: var(--vibrant-gradient); color: white; padding: 20px 30px; font-size: 1.1rem; font-weight: 700; }
+        .card-body { padding: 30px; }
+        
+        #domain-controls { padding: 25px; background: #f8fafc; border-top: 1px solid var(--border); display: none; }
+        select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border); font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="logo-header" onclick="showWelcome()">
+        <img src="{{ url_for('static', filename='ephicacy_log.jpg') }}" alt="EPHICACY">
+    </div>
+    
+    <div class="nav-container">
+        {% for domain in domains %}
+        <div class="tab" id="tab-{{domain.id}}" onclick="loadDomain('{{ domain.id }}')">
+            {{ domain.label }}
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div id="domain-controls">
+        <span style="font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Analysis Configuration</span>
+        <select id="view-mode" onchange="fetchData()">
+            <option value="mean">Group Comparison (Box Plot)</option>
+            <option value="individual">Patient Journey (Strip Plot)</option>
+        </select>
+    </div>
+</div>
+
+<div class="main-content">
+    <div id="welcome-page">
+        <img src="{{ url_for('static', filename='PharmaSUG.jpg') }}" class="pharmasug-logo" alt="PharmaSUG 2026">
+        
+        <div class="abstract-meta">PharmaSUG 2026 Conference Presentation</div>
+        <h1>An Innovative Solution for Interactive Dashboards Using Python Flask Framework for Clinical Data Analytics</h1>
+        
+        <div class="info-grid">
+            <div class="info-card">
+                <h3>🚀 The Innovation</h3>
+                <p>Leveraging Flask to bypass traditional static reporting, enabling real-time interaction with SDTM SAS7BDAT datasets.</p>
+            </div>
+            <div class="info-card">
+                <h3>📊 Dynamic Findings</h3>
+                <p>Automated faceted visualizations for Laboratory (LB), Vital Signs (VS), and ECG (EG) domains with independent scaling.</p>
+            </div>
+            <div class="info-card">
+                <h3>🔍 Comparative Analytics</h3>
+                <p>Instant toggle between treatment-arm group distributions and granular individual patient outliers.</p>
+            </div>
+            <div class="info-card">
+                <h3>🛠 Technical Stack</h3>
+                <p>Engineered using Python, Flask, PyReadStat, and Plotly to ensure SDTM-compliant medical data integrity.</p>
+            </div>
+        </div>
+        
+        <button onclick="document.querySelector('.tab').click()" style="margin-top: 40px; padding: 18px 50px; background: var(--ephicacy-blue); color: white; border: none; border-radius: 40px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(0,74,153,0.3);">Launch Interactive Explorer</button>
+    </div>
+    
+    <div id="plot-area" style="display:none;"></div>
+</div>
+
+<script>
+let currentDomain = "";
+
+function showWelcome() {
+    document.getElementById('welcome-page').style.display = "flex";
+    document.getElementById('plot-area').style.display = "none";
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+}
+
+function loadDomain(domainId) {
+    currentDomain = domainId;
+    document.getElementById('welcome-page').style.display = "none";
+    document.getElementById('plot-area').style.display = "block";
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(`tab-${domainId}`).classList.add('active');
+    
+    const controls = document.getElementById('domain-controls');
+    controls.style.display = (['LB', 'VS', 'EG'].includes(domainId.toUpperCase())) ? 'block' : 'none';
+    fetchData();
+}
+
+async function fetchData() {
+    const area = document.getElementById("plot-area");
+    const mode = document.getElementById("view-mode").value;
+    area.innerHTML = "<div style='text-align:center; padding:100px; font-weight:bold; color:#004a99; font-size:1.2rem;'>⌛ Executing Python Data Processing...</div>";
+
+    try {
+        const res = await fetch(`/get_plots/${currentDomain}?mode=${mode}`);
+        const data = await res.json();
+        area.innerHTML = "";
+        
+        if (data.error) {
+            area.innerHTML = `<div class="card" style="padding:40px; color:#ef4444; border-left: 8px solid #ef4444;"><b>Data Processing Error:</b> ${data.error}</div>`;
+        } else {
+            data.plots.forEach((p, i) => {
+                const card = document.createElement("div");
+                card.className = "card";
+                card.innerHTML = `<div class="card-header">${data.titles[i]}</div><div class="card-body" id="chart-${i}"></div>`;
+                area.appendChild(card);
+                Plotly.newPlot(`chart-${i}`, JSON.parse(p), {}, {responsive: true});
+            });
+        }
+    } catch (e) { area.innerHTML = "Communication link to Python Flask server failed."; }
+}
+</script>
+</body>
+</html>
