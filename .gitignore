@@ -3,10 +3,7 @@ venv/
 __pycache__/
 *.pyc
 
-# Clinical Data (Prevents pushing massive or sensitive files)
-*.sas7bdat
-*.csv
-*.docx
+# Clinical Data - Ignore specific raw data folders
 SDTM_SAS/
 ADAM_SAS/
 
