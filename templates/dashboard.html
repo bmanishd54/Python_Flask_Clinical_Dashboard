@@ -72,15 +72,12 @@
             <div class="info-card"><h3>🔍 Comparative Analytics</h3><p>Instant toggle between treatment-arm group distributions and granular individual patient outliers.</p></div>
             <div class="info-card"><h3>🛠 Technical Stack</h3><p>Engineered using Python, Flask, PyReadStat, and Plotly to ensure SDTM-compliant medical data integrity.</p></div>
         </div>
-
         <button class="launch-btn" onclick="enableExplorer()">🚀 Launch Interactive Explorer</button>
     </div>
     
     <div id="display-area" style="display:none;">
         <div class="card"><div id="plot" style="min-height: 500px;"></div></div>
-        
         <button id="summary-toggle" class="toggle-btn" onclick="toggleSummary()">Show Summary Table</button>
-        
         <div class="card" id="table-card" style="display:none;">
             <h3 style="color:var(--ephicacy-blue); margin-top:0;">Clinical Summary Table / TLF</h3>
             <div id="table-box" style="overflow-x: auto;"></div>
@@ -90,7 +87,6 @@
 
 <script>
 const ALL_DOMAINS = {{ domains|tojson }};
-// MANDATORY GROUP BY LIST
 const ALLOWED_GRP = [
     'ARM', 'SEX', 'LBNRIND', 'LBCAT', 'VSTEST', 'LBTESTCD', 'DSTERM', 'RACE', 'ETHNIC', 
     'ARMCD', 'ACTARMCD', 'COUNTRY', 'AETERM', 'AEOUT', 'AESCAN', 'AESCONG', 'AEDISAB', 
@@ -137,12 +133,11 @@ function updateDropdowns(domainId) {
     const ySelect = document.getElementById('sel-y');
     const grpSelect = document.getElementById('sel-grp');
     
-    // REMOVED DSSPID FROM X-AXIS AND OTHER DROPS
-    const junk = ['SEQ', 'STUDYID', 'DOMAIN', 'USUBJID', 'DSSPID'];
+    // REMOVED SUBJID AND DSSPID FROM X-AXIS AND DROPDOWNS
+    const junk = ['SEQ', 'STUDYID', 'DOMAIN', 'USUBJID', 'DSSPID', 'SUBJID'];
     let cleanCols = currentCols.filter(c => !junk.some(j => c.includes(j)));
     let numOnly = currentNumCols.filter(c => !c.includes('VISIT') && !c.includes('DY'));
     
-    // RESTRICTION: Only use variables from your allowed list for Group By
     let grpOptions = cleanCols.filter(c => ALLOWED_GRP.includes(c));
 
     let charts = [{v:'box', t:'Box Plot'}, {v:'line', t:'Line Chart'}, {v:'hist', t:'Bar Chart'}, {v:'pie', t:'Pie Chart'}];
@@ -153,11 +148,9 @@ function updateDropdowns(domainId) {
     ySelect.innerHTML = numOnly.map(c => `<option value="${c}">${c}</option>`).join("");
     grpSelect.innerHTML = `<option value="NONE">-- None --</option>` + grpOptions.map(c => `<option value="${c}">${c}</option>`).join("");
 
-    // DEFAULT GROUP SELECTION
     if (grpOptions.includes('ARM')) grpSelect.value = 'ARM';
     else if (grpOptions.includes('TRTP')) grpSelect.value = 'TRTP';
 
-    // LB/VS LOCKS
     if (domainId.toUpperCase() === 'VS') {
         if (numOnly.includes('VSSTRESN')) ySelect.value = 'VSSTRESN';
         xSelect.value = 'VISIT';

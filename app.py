@@ -34,7 +34,6 @@ DOMAINS = {
     }
 }
 
-# PERFORMANCE: Cache datasets in memory to speed up repeated queries
 @lru_cache(maxsize=32)
 def load_data(file_name):
     path = os.path.join(DATA_PATH, f"{file_name.lower()}.sas7bdat")
@@ -44,7 +43,6 @@ def load_data(file_name):
         if "USUBJID" in df.columns:
             df["USUBJID"] = df["USUBJID"].astype(str).str.strip()
         
-        # Ensure Treatment Arm context is available for all domains
         if "ARM" not in df.columns:
             dm_path = os.path.join(DATA_PATH, "dm.sas7bdat")
             if os.path.exists(dm_path):
@@ -88,7 +86,6 @@ def get_analysis(dataset):
     if df is None: return jsonify({"error": "Data error"})
     grp = None if grp == "NONE" else grp
     
-    # Identify clinical parameter columns for faceting
     param_candidates = [f"{dataset.upper()}TESTCD", f"{dataset.upper()}TEST", f"{dataset.upper()}CAT", "PARAMCD"]
     param_col = next((c for c in param_candidates if c in df.columns), None)
 
@@ -103,7 +100,7 @@ def get_analysis(dataset):
         summary_html = get_clinical_summary(plot_df, [c for c in [param_col, grp, x] if c], y)
 
         if chart_type == "box":
-            fig = px.box(plot_df, x=x, y=y, color=grp, facet_col=param_col, facet_col_wrap=3, points="outliers")
+            fig = px.box(plot_df, x=x, y=y, color=grp, facet_col=param_col, facet_col_wrap=3)
         else: # Line Chart
             sort_col = next((c for c in ["AVISITN", "VISITNUM"] if c in plot_df.columns), None)
             line_df = plot_df.groupby([c for c in [sort_col, x, grp, param_col] if c])[y].mean().reset_index()
