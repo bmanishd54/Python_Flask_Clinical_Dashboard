@@ -13,10 +13,8 @@
         .logo-header img { max-width: 100%; height: auto; max-height: 80px; object-fit: contain; }
 
         .nav-container { flex-grow: 1; overflow-y: auto; padding: 20px 15px; }
-        .tab { padding: 12px 18px; cursor: not-allowed; border-radius: 10px; margin-bottom: 8px; color: #94a3b8; font-size: 0.85rem; transition: 0.3s; pointer-events: none; opacity: 0.6; }
-        .tab.enabled { cursor: pointer; pointer-events: auto; opacity: 1; color: #0f172a; }
-        .tab.enabled:hover { background-color: #f8fafc; color: var(--ephicacy-blue); }
-        .tab.active { background: var(--ephicacy-blue) !important; color: white !important; font-weight: 600; }
+        .tab { padding: 12px 18px; cursor: pointer; border-radius: 10px; margin-bottom: 8px; color: #64748b; font-size: 0.85rem; transition: 0.3s; }
+        .tab.active { background: var(--ephicacy-blue); color: white; font-weight: 600; }
 
         .main-content { flex-grow: 1; overflow-y: auto; padding: 40px; position: relative; }
         #welcome-page { background: white; border-radius: 20px; padding: 50px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); display: flex; flex-direction: column; align-items: center; text-align: center; }
@@ -28,26 +26,24 @@
         .launch-btn { margin-top: 30px; padding: 15px 40px; background: var(--ephicacy-blue); color: white; border: none; border-radius: 30px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 1rem; }
         .launch-btn:hover { background: #003366; transform: scale(1.05); }
 
-        .effect-img { width: 100%; max-width: 800px; margin-top: 40px; border-radius: 15px; border: 1px solid var(--border); }
-
-        #domain-controls { padding: 20px; background: #f8fafc; border-top: 1px solid var(--border); display: none; }
-        .control-group { margin-bottom: 12px; transition: opacity 0.3s; }
+        #domain-controls { padding: 20px; background: #f8fafc; border-top: 1px solid var(--border); }
+        .control-group { margin-bottom: 12px; }
         label { font-size: 0.7rem; font-weight: bold; color: var(--ephicacy-blue); display: block; margin-bottom: 4px; text-transform: uppercase;}
         select { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: white; outline: none;}
 
         .card { background: white; border-radius: 15px; padding: 25px; margin-bottom: 30px; border: 1px solid var(--border); }
-        .summary-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 15px; }
+        .summary-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 10px; }
         .summary-table th { background: #f1f5f9; padding: 10px; text-align: left; color: var(--ephicacy-blue); border-bottom: 2px solid var(--border); }
         .summary-table td { padding: 10px; border-bottom: 1px solid var(--border); }
+
+        .toggle-btn { background: #64748b; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; margin-bottom: 20px; transition: 0.3s; }
+        .toggle-btn.active { background: var(--ephicacy-blue); }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
-    <div class="logo-header" onclick="showWelcome()">
-        <img src="{{ url_for('static', filename='ephicacy_log.jpg') }}">
-    </div>
-
+    <div class="logo-header" onclick="location.reload()"><img src="{{ url_for('static', filename='ephicacy_log.jpg') }}"></div>
     <div style="padding: 10px 20px;">
         <label>DATA STANDARD</label>
         <select id="std-select" onchange="updateTabs()">
@@ -55,27 +51,12 @@
             <option value="ADAM">ADaM Analysis Data</option>
         </select>
     </div>
-
     <div class="nav-container" id="tab-list"></div>
-    
-    <div id="domain-controls">
-        <div class="control-group">
-            <label>ANALYSIS TYPE</label>
-            <select id="plot-type" onchange="onPlotTypeChange()"></select>
-        </div>
-        
-        <div class="control-group" id="grp-container">
-            <label>GROUP BY / FACTOR</label>
-            <select id="sel-grp" onchange="refresh()"></select>
-        </div>
-        <div class="control-group" id="x-container">
-            <label>X-AXIS VARIABLE</label>
-            <select id="sel-x" onchange="refresh()"></select>
-        </div>
-        <div class="control-group" id="y-container">
-            <label>Y-AXIS (Numeric Measurement)</label>
-            <select id="sel-y" onchange="refresh()"></select>
-        </div>
+    <div id="domain-controls" style="display:none;">
+        <div class="control-group"><label>ANALYSIS TYPE</label><select id="plot-type" onchange="onPlotTypeChange()"></select></div>
+        <div class="control-group"><label>GROUP BY</label><select id="sel-grp" onchange="refresh()"></select></div>
+        <div class="control-group"><label>X-AXIS VARIABLE</label><select id="sel-x" onchange="refresh()"></select></div>
+        <div class="control-group" id="y-container"><label>Y-AXIS</label><select id="sel-y" onchange="refresh()"></select></div>
     </div>
 </div>
 
@@ -93,13 +74,14 @@
         </div>
 
         <button class="launch-btn" onclick="enableExplorer()">🚀 Launch Interactive Explorer</button>
-
-        <img src="{{ url_for('static', filename='ephicacy_Effect.jpg') }}" class="effect-img" alt="Ephicacy Effect">
     </div>
     
     <div id="display-area" style="display:none;">
         <div class="card"><div id="plot" style="min-height: 500px;"></div></div>
-        <div class="card">
+        
+        <button id="summary-toggle" class="toggle-btn" onclick="toggleSummary()">Show Summary Table</button>
+        
+        <div class="card" id="table-card" style="display:none;">
             <h3 style="color:var(--ephicacy-blue); margin-top:0;">Clinical Summary Table / TLF</h3>
             <div id="table-box" style="overflow-x: auto;"></div>
         </div>
@@ -108,183 +90,115 @@
 
 <script>
 const ALL_DOMAINS = {{ domains|tojson }};
+// MANDATORY GROUP BY LIST
+const ALLOWED_GRP = [
+    'ARM', 'SEX', 'LBNRIND', 'LBCAT', 'VSTEST', 'LBTESTCD', 'DSTERM', 'RACE', 'ETHNIC', 
+    'ARMCD', 'ACTARMCD', 'COUNTRY', 'AETERM', 'AEOUT', 'AESCAN', 'AESCONG', 'AEDISAB', 
+    'AESDTH', 'AESHOSP', 'AESLIFE', 'TRT01A', 'TRT01P', 'EOSSTT', 'RACEGR1', 'AGEGR1', 
+    'SAFFL', 'DTHCAUS', 'DTHADY', 'ACTARM'
+];
+
 let currentId = "";
-let explorerEnabled = false;
 let currentCols = [];
 let currentNumCols = [];
 
 function updateTabs() {
     const std = document.getElementById('std-select').value;
     const container = document.getElementById('tab-list');
-    if (ALL_DOMAINS[std]) {
-        container.innerHTML = Object.entries(ALL_DOMAINS[std]).map(([id, label]) => 
-            `<div class="tab ${explorerEnabled ? 'enabled' : ''}" id="tab-${id}" onclick="selectDomain('${id}')">${label}</div>`
-        ).join('');
-    }
+    container.innerHTML = Object.entries(ALL_DOMAINS[std]).map(([id, label]) => 
+        `<div class="tab" id="tab-${id}" onclick="selectDomain('${id}')">${label}</div>`
+    ).join('');
 }
 
 function enableExplorer() {
-    explorerEnabled = true;
-    updateTabs();
-    const firstTab = document.querySelector('.tab.enabled');
+    const firstTab = document.querySelector('.tab');
     if (firstTab) firstTab.click();
-}
-
-function showWelcome() {
-    explorerEnabled = false;
-    document.getElementById('welcome-page').style.display = "flex";
-    document.getElementById('display-area').style.display = "none";
-    document.getElementById('domain-controls').style.display = "none";
-    updateTabs();
 }
 
 async function selectDomain(id) {
     currentId = id;
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.getElementById(`tab-${id}`).classList.add('active');
-    
-    document.getElementById('welcome-page').style.display = "none";
-    document.getElementById('display-area').style.display = "block";
-    document.getElementById('domain-controls').style.display = "block";
+    document.getElementById('welcome-page').style.display = 'none';
+    document.getElementById('display-area').style.display = 'block';
+    document.getElementById('domain-controls').style.display = 'block';
 
     const res = await fetch(`/get_metadata/${id}`);
     const meta = await res.json();
     currentCols = meta.columns;
     currentNumCols = meta.numeric_cols;
-
-    updateDropdowns(id, true);
+    updateDropdowns(id);
     refresh();
 }
 
-function onPlotTypeChange() {
-    updateDropdowns(currentId, false);
-    refresh();
-}
-
-function updateDropdowns(domainId, domainSwitch) {
+function updateDropdowns(domainId) {
     const plotSelect = document.getElementById('plot-type');
     const xSelect = document.getElementById('sel-x');
     const ySelect = document.getElementById('sel-y');
     const grpSelect = document.getElementById('sel-grp');
-
-    const grpContainer = document.getElementById('grp-container');
-    const yContainer = document.getElementById('y-container');
-
-    const pureNumCols = currentNumCols.filter(c => !c.includes('VISIT') && !c.includes('SEQ') && !c.includes('DY') && c !== 'USUBJID');
-    const timeCols = currentCols.filter(c => c.includes('VISIT') || c.includes('DTC') || c.includes('DY'));
     
-    // 1. DOMAIN SPECIFIC CHART TYPE RULES
-    let availableCharts = [
-        {val: 'box', text: 'Box Plot (Distribution)'},
-        {val: 'line', text: 'Line Chart (Time Trend)'},
-        {val: 'histogram', text: 'Bar Chart (Frequencies)'},
-        {val: 'pie', text: 'Pie Chart (Proportions)'}
-    ];
-
-    // RULE: Remove Line Chart from DM, AE, ADAE, and ADSL
-    if (['DM', 'AE', 'ADAE', 'ADSL'].includes(domainId.toUpperCase())) {
-        availableCharts = availableCharts.filter(c => c.val !== 'line');
-    }
-    if (pureNumCols.length === 0) {
-        availableCharts = availableCharts.filter(c => c.val === 'histogram' || c.val === 'pie');
-    }
-
-    const prevType = plotSelect.value;
-    plotSelect.innerHTML = availableCharts.map(c => `<option value="${c.val}">${c.text}</option>`).join("");
+    // REMOVED DSSPID FROM X-AXIS AND OTHER DROPS
+    const junk = ['SEQ', 'STUDYID', 'DOMAIN', 'USUBJID', 'DSSPID'];
+    let cleanCols = currentCols.filter(c => !junk.some(j => c.includes(j)));
+    let numOnly = currentNumCols.filter(c => !c.includes('VISIT') && !c.includes('DY'));
     
-    if (!domainSwitch && Array.from(plotSelect.options).some(opt => opt.value === prevType)) {
-        plotSelect.value = prevType;
-    } else {
-        if (['ADAE', 'AE', 'DS'].includes(domainId.toUpperCase())) plotSelect.value = 'histogram';
-        else plotSelect.value = availableCharts[0].val; 
-    }
+    // RESTRICTION: Only use variables from your allowed list for Group By
+    let grpOptions = cleanCols.filter(c => ALLOWED_GRP.includes(c));
 
-    const type = plotSelect.value;
-
-    // 2. HIDE/SHOW CONTAINERS BASED ON CHART TYPE
-    if (type === 'pie') {
-        grpContainer.style.display = 'none';
-        yContainer.style.display = 'none';
-    } else if (type === 'histogram') {
-        grpContainer.style.display = 'block';
-        yContainer.style.display = 'none';
-    } else {
-        grpContainer.style.display = 'block';
-        yContainer.style.display = 'block';
-    }
-
-    // 3. JUNK FILTERING & BASE VARIABLE LISTS
-    const junkPatterns = ['SEQ', 'SPID', 'STUDYID', 'DOMAIN', 'USUBJID'];
-    let cleanCols = currentCols.filter(c => !junkPatterns.some(j => c.toUpperCase().includes(j)) && !c.toUpperCase().endsWith('CD'));
+    let charts = [{v:'box', t:'Box Plot'}, {v:'line', t:'Line Chart'}, {v:'hist', t:'Bar Chart'}, {v:'pie', t:'Pie Chart'}];
+    if (['DM','ADSL','AE','ADAE'].includes(domainId.toUpperCase())) charts = charts.filter(c => c.v !== 'line');
     
-    let xOptions = type === 'line' && timeCols.length > 0 ? timeCols : cleanCols;
-    let grpOptions = cleanCols.filter(c => !pureNumCols.includes(c));
-
-    // 4. HARDCODED BUSINESS RULES PER USER REQUEST
-    if (domainId.toUpperCase() === 'DM') {
-        grpOptions = currentCols.filter(c => ['ARM', 'SEX'].includes(c));
-    }
-    if (domainId.toUpperCase() === 'AE' || domainId.toUpperCase() === 'ADAE') {
-        grpOptions = currentCols.filter(c => ['ARM', 'TRTP', 'SEX', 'AEOUT'].includes(c));
-        if (type === 'histogram' || type === 'pie') {
-            xOptions = currentCols.filter(c => ['AEREL', 'AESEV', 'AEDECOD', 'AETERM'].includes(c));
-        }
-    }
-    if (domainId.toUpperCase() === 'LB') {
-        grpOptions = currentCols.filter(c => ['ARM', 'TRTP', 'SEX', 'LBNRIND', 'LBCAT'].includes(c));
-        if (type === 'histogram' || type === 'pie') {
-            xOptions = currentCols.filter(c => ['LBCAT', 'LBTEST', 'LBNRIND', 'VISIT'].includes(c));
-        } else {
-            if (currentCols.includes('VISIT')) xOptions = ['VISIT'];
-        }
-    }
-
-    const prevX = xSelect.value;
-    const prevY = ySelect.value;
-    const prevGrp = grpSelect.value;
-
-    xSelect.innerHTML = xOptions.map(c => `<option value="${c}">${c}</option>`).join("");
-    ySelect.innerHTML = pureNumCols.map(c => `<option value="${c}">${c}</option>`).join("");
+    plotSelect.innerHTML = charts.map(c => `<option value="${c.v}">${c.t}</option>`).join("");
+    xSelect.innerHTML = cleanCols.map(c => `<option value="${c}">${c}</option>`).join("");
+    ySelect.innerHTML = numOnly.map(c => `<option value="${c}">${c}</option>`).join("");
     grpSelect.innerHTML = `<option value="NONE">-- None --</option>` + grpOptions.map(c => `<option value="${c}">${c}</option>`).join("");
 
-    // 5. RESTORE OR APPLY SMART DEFAULTS
-    if (grpOptions.includes(prevGrp)) grpSelect.value = prevGrp;
+    // DEFAULT GROUP SELECTION
+    if (grpOptions.includes('ARM')) grpSelect.value = 'ARM';
     else if (grpOptions.includes('TRTP')) grpSelect.value = 'TRTP';
-    else if (grpOptions.includes('ARM')) grpSelect.value = 'ARM';
 
-    if (xOptions.includes(prevX)) xSelect.value = prevX;
-    else if (domainId.toUpperCase() === 'LB' && (type === 'histogram' || type === 'pie') && xOptions.includes('LBNRIND')) xSelect.value = 'LBNRIND';
-    else if (xOptions.includes('AEDECOD')) xSelect.value = 'AEDECOD';
-    else if (xOptions.includes('DSDECOD')) xSelect.value = 'DSDECOD';
-    else if (xOptions.includes('VISIT')) xSelect.value = 'VISIT';
+    // LB/VS LOCKS
+    if (domainId.toUpperCase() === 'VS') {
+        if (numOnly.includes('VSSTRESN')) ySelect.value = 'VSSTRESN';
+        xSelect.value = 'VISIT';
+    } else if (domainId.toUpperCase() === 'LB') {
+        if (numOnly.includes('LBSTRESN')) ySelect.value = 'LBSTRESN';
+        xSelect.value = 'VISIT';
+    }
+}
 
-    if (pureNumCols.includes(prevY)) ySelect.value = prevY;
-    else if (pureNumCols.includes('AVAL')) ySelect.value = 'AVAL';
-    else if (pureNumCols.includes('AGE')) ySelect.value = 'AGE';
+function onPlotTypeChange() {
+    const type = document.getElementById('plot-type').value;
+    document.getElementById('y-container').style.display = (type === 'box' || type === 'line') ? 'block' : 'none';
+    refresh();
+}
+
+function toggleSummary() {
+    const card = document.getElementById('table-card');
+    const btn = document.getElementById('summary-toggle');
+    if (card.style.display === 'none') {
+        card.style.display = 'block';
+        btn.innerText = "Hide Summary Table";
+        btn.classList.add('active');
+    } else {
+        card.style.display = 'none';
+        btn.innerText = "Show Summary Table";
+        btn.classList.remove('active');
+    }
 }
 
 async function refresh() {
     const type = document.getElementById('plot-type').value;
     const x = document.getElementById('sel-x').value;
-    const y = (type === 'box' || type === 'line') ? document.getElementById('sel-y').value : "";
-    const grp = (type === 'pie') ? "NONE" : document.getElementById('sel-grp').value;
-    
-    if ((type === 'box' || type === 'line') && !y) {
-        document.getElementById('plot').innerHTML = "<div style='padding:40px; color:#ef4444; text-align:center;'><b>Missing Selection:</b> Please select a Numeric Y-Axis variable for this chart.</div>";
-        document.getElementById('table-box').innerHTML = "";
-        return;
-    }
-
+    const y = document.getElementById('sel-y').value;
+    const grp = document.getElementById('sel-grp').value;
     const res = await fetch(`/get_analysis/${currentId}?x=${x}&y=${y}&grp=${grp}&type=${type}`);
     const data = await res.json();
-    
-    if (data.plots && data.plots.length > 0) {
-        Plotly.newPlot('plot', JSON.parse(data.plots[0]), {responsive: true});
-    } else {
-        document.getElementById('plot').innerHTML = "<div style='padding:40px; text-align:center; color:#64748b;'>No visualization available for the selected variables.</div>";
-    }
-    document.getElementById('table-box').innerHTML = data.table || "<p>No summary generated.</p>";
+    if (data.plots) Plotly.newPlot('plot', JSON.parse(data.plots[0]), {responsive: true});
+    document.getElementById('table-box').innerHTML = data.table || "";
 }
+
+updateTabs();
 </script>
 </body>
 </html>
