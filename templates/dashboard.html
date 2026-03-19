@@ -5,103 +5,135 @@
     <title>PharmaSUG 2026 | Ephicacy Innovation</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
-        :root { --ephicacy-blue: #004a99; --sidebar-bg: #ffffff; --main-bg: #f1f5f9; --border: #e2e8f0; }
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--main-bg); display: flex; margin: 0; height: 100vh; overflow: hidden; }
+        :root { --ephicacy-blue: #004a99; --sidebar-bg: #ffffff; --main-bg: #f8fafc; --border: #cbd5e1; }
+        body { font-family: 'Inter', 'Segoe UI', sans-serif; background-color: var(--main-bg); display: flex; margin: 0; height: 100vh; overflow: hidden; }
 
-        .sidebar { width: 360px; background-color: var(--sidebar-bg); border-right: 3px solid var(--ephicacy-blue); display: flex; flex-direction: column; }
-        .logo-header { padding: 30px 20px; border-bottom: 1px solid var(--border); text-align: center; cursor: pointer; }
-        .logo-header img { max-width: 100%; height: auto; max-height: 80px; object-fit: contain; }
+        /* Login */
+        #login-overlay { position: fixed; inset: 0; background: var(--ephicacy-blue); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        .login-card { background: white; padding: 50px; border-radius: 24px; width: 380px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+        .login-card input { width: 100%; padding: 14px; margin: 12px 0; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 1rem; }
+        .login-card input:focus { border-color: var(--ephicacy-blue); outline: none; }
+        .login-btn { background: var(--ephicacy-blue); color: white; border: none; padding: 14px; width: 100%; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 1.1rem; }
 
-        .nav-container { flex-grow: 1; overflow-y: auto; padding: 20px 15px; }
-        .tab { padding: 12px 18px; cursor: pointer; border-radius: 10px; margin-bottom: 8px; color: #64748b; font-size: 0.85rem; transition: 0.3s; }
-        .tab.active { background: var(--ephicacy-blue); color: white; font-weight: 600; }
+        /* Sidebar - Narrowed as requested */
+        .sidebar { width: 280px; background-color: var(--sidebar-bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; box-shadow: 4px 0 10px rgba(0,0,0,0.02); }
+        .logo-header { padding: 40px 20px; border-bottom: 1px solid #f1f5f9; text-align: center; cursor: pointer; }
+        .logo-header img { max-height: 70px; width: auto; }
+        
+        .nav-container { flex-grow: 1; overflow-y: auto; padding: 20px 10px; }
+        .tab { padding: 10px 15px; cursor: pointer; border-radius: 8px; margin-bottom: 4px; color: #475569; font-size: 0.85rem; font-weight: 500; transition: all 0.2s; }
+        .tab:hover { background: #f1f5f9; color: var(--ephicacy-blue); }
+        .tab.active { background: #eff6ff; color: var(--ephicacy-blue); border-left: 4px solid var(--ephicacy-blue); border-radius: 4px 8px 8px 4px; }
 
-        .main-content { flex-grow: 1; overflow-y: auto; padding: 40px; position: relative; }
-        #welcome-page { background: white; border-radius: 20px; padding: 50px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); display: flex; flex-direction: column; align-items: center; text-align: center; }
-        .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 30px; width: 100%; max-width: 900px; text-align: left; }
-        .info-card { padding: 20px; background: #f8fafc; border-left: 5px solid var(--ephicacy-blue); border-radius: 10px; }
-        .info-card h3 { margin: 0 0 5px 0; color: var(--ephicacy-blue); font-size: 1rem; }
-        .info-card p { margin: 0; font-size: 0.9rem; color: #475569; }
+        /* Main Content - Expanded Area */
+        .main-content { flex-grow: 1; overflow-y: auto; padding: 35px; position: relative; }
+        #welcome-page { background: white; border-radius: 24px; padding: 60px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); text-align: center; max-width: 1100px; margin: 0 auto; }
+        .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 25px; margin-top: 40px; }
+        .info-card { padding: 25px; background: #fdfdfd; border-radius: 16px; border: 1px solid #f1f5f9; border-top: 4px solid var(--ephicacy-blue); text-align: left;}
+        
+        .launch-btn { margin-top: 40px; padding: 18px 50px; background: var(--ephicacy-blue); color: white; border: none; border-radius: 40px; font-weight: bold; cursor: pointer; font-size: 1.1rem; box-shadow: 0 10px 15px -3px rgba(0, 74, 153, 0.3); }
 
-        .launch-btn { margin-top: 30px; padding: 15px 40px; background: var(--ephicacy-blue); color: white; border: none; border-radius: 30px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 1rem; }
-        .launch-btn:hover { background: #003366; transform: scale(1.05); }
-
+        /* Analysis Controls */
         #domain-controls { padding: 20px; background: #f8fafc; border-top: 1px solid var(--border); }
-        .control-group { margin-bottom: 12px; }
-        label { font-size: 0.7rem; font-weight: bold; color: var(--ephicacy-blue); display: block; margin-bottom: 4px; text-transform: uppercase;}
-        select { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: white; outline: none;}
+        .control-group { margin-bottom: 15px; }
+        label { font-size: 0.7rem; font-weight: 800; color: #64748b; margin-bottom: 5px; display: block; letter-spacing: 0.5px; }
+        select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); font-size: 0.9rem; color: #1e293b; background: white; }
 
-        .card { background: white; border-radius: 15px; padding: 25px; margin-bottom: 30px; border: 1px solid var(--border); }
-        .summary-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 10px; }
-        .summary-table th { background: #f1f5f9; padding: 10px; text-align: left; color: var(--ephicacy-blue); border-bottom: 2px solid var(--border); }
-        .summary-table td { padding: 10px; border-bottom: 1px solid var(--border); }
-
-        .toggle-btn { background: #64748b; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; margin-bottom: 20px; transition: 0.3s; }
-        .toggle-btn.active { background: var(--ephicacy-blue); }
+        .card { background: white; border-radius: 20px; padding: 30px; margin-bottom: 30px; border: 1px solid #e2e8f0; }
+        .toggle-btn { background: #475569; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 600; margin-bottom: 20px; }
+        .summary-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .summary-table th { text-align: left; background: #f8fafc; padding: 12px; color: var(--ephicacy-blue); }
+        .summary-table td { padding: 12px; border-bottom: 1px solid #f1f5f9; }
     </style>
 </head>
 <body>
 
+{% if show_login %}
+<div id="login-overlay">
+    <div class="login-card">
+        <img src="{{ url_for('static', filename='ephicacy_log.jpg') }}">
+        <h2 style="color:var(--ephicacy-blue); margin-top:20px;">Secure Access</h2>
+        <input type="text" id="user" placeholder="Enter Username">
+        <input type="password" id="pwd" placeholder="Enter Password">
+        <button class="login-btn" onclick="doLogin()">Authorize Session</button>
+        <p id="status-msg" style="margin-top:15px; display:none; font-size:0.9rem;"></p>
+    </div>
+</div>
+{% endif %}
+
 <div class="sidebar">
     <div class="logo-header" onclick="location.reload()"><img src="{{ url_for('static', filename='ephicacy_log.jpg') }}"></div>
-    <div style="padding: 10px 20px;">
-        <label>DATA STANDARD</label>
+    <div style="padding: 15px;">
+        <label>SYSTEM STANDARD</label>
         <select id="std-select" onchange="updateTabs()">
             <option value="SDTM">SDTM Standards</option>
-            <option value="ADAM">ADaM Analysis Data</option>
+            <option value="ADAM">ADaM Datasets</option>
         </select>
     </div>
     <div class="nav-container" id="tab-list"></div>
     <div id="domain-controls" style="display:none;">
-        <div class="control-group"><label>ANALYSIS TYPE</label><select id="plot-type" onchange="onPlotTypeChange()"></select></div>
-        <div class="control-group"><label>GROUP BY</label><select id="sel-grp" onchange="refresh()"></select></div>
-        <div class="control-group"><label>X-AXIS VARIABLE</label><select id="sel-x" onchange="refresh()"></select></div>
-        <div class="control-group" id="y-container"><label>Y-AXIS</label><select id="sel-y" onchange="refresh()"></select></div>
+        <div class="control-group"><label>VISUALIZATION TYPE</label><select id="plot-type" onchange="onPlotTypeChange()"></select></div>
+        <div id="line-filters" style="display:none; margin-bottom:12px;">
+            <label style="color:#dc2626; display:flex; align-items:center; cursor:pointer; font-size:0.75rem;">
+                <input type="checkbox" id="no-unsched" onchange="refresh()"> &nbsp; 🚫 CLEAN UNSCHEDULED NOISE
+            </label>
+        </div>
+        <div class="control-group"><label>GROUPING STRATIFICATION</label><select id="sel-grp" onchange="refresh()"></select></div>
+        <div class="control-group"><label>X-AXIS (TEMPORAL/CAT)</label><select id="sel-x" onchange="refresh()"></select></div>
+        <div class="control-group" id="y-container"><label>Y-AXIS (MEASUREMENT)</label><select id="sel-y" onchange="refresh()"></select></div>
+        <button onclick="location.href='/logout'" style="width:100%; padding:8px; background:none; border:1px solid #e2e8f0; border-radius:8px; cursor:pointer; font-size:0.7rem; color:#64748b;">🔒 TERMINATE SESSION</button>
     </div>
 </div>
 
 <div class="main-content">
     <div id="welcome-page">
-        <img src="{{ url_for('static', filename='PharmaSUG.jpg') }}" style="height: 80px; margin-bottom: 20px;">
-        <div style="color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">PharmaSUG 2026 Conference Presentation</div>
-        <h1 style="color: var(--ephicacy-blue); margin-bottom: 20px;">An Innovative Solution for Interactive Dashboards Using Python Flask Framework for Clinical Data Analytics</h1>
-        
+        <img src="{{ url_for('static', filename='PharmaSUG.jpg') }}" style="height: 60px;">
+        <p style="color:#64748b; font-weight:bold; letter-spacing:2px; margin-top:20px;">PHARMASUG 2026</p>
+        <h1 style="color:var(--ephicacy-blue); font-size:2.2rem; line-height:1.2;">Interactive Clinical Dashboards Using Python Flask for Advanced Data Analytics</h1>
         <div class="info-grid">
-            <div class="info-card"><h3>🚀 The Innovation</h3><p>Leveraging Flask to bypass traditional static reporting, enabling real-time interaction with SDTM SAS7BDAT datasets.</p></div>
-            <div class="info-card"><h3>📊 Dynamic Findings</h3><p>Automated faceted visualizations for Laboratory (LB), Vital Signs (VS), and ECG (EG) domains with independent scaling.</p></div>
-            <div class="info-card"><h3>🔍 Comparative Analytics</h3><p>Instant toggle between treatment-arm group distributions and granular individual patient outliers.</p></div>
-            <div class="info-card"><h3>🛠 Technical Stack</h3><p>Engineered using Python, Flask, PyReadStat, and Plotly to ensure SDTM-compliant medical data integrity.</p></div>
+            <div class="info-card"><h3>🚀 Innovation</h3><p>Direct real-time ingestion of CDISC sas7bdat datasets bypassing legacy static reporting barriers.</p></div>
+            <div class="info-card"><h3>📊 Dynamic Views</h3><p>Automated faceting for Laboratory and Vital Signs with smart parameter prioritization.</p></div>
+            <div class="info-card"><h3>🔍 Comparative Analysis</h3><p>Instant stratification by treatment arms and demographic cohorts for rapid signal detection.</p></div>
+            <div class="info-card"><h3>🛠 Technical Excellence</h3><p>Built with GxP-ready Python, Flask, and Plotly to ensure data integrity and future-ready scalability.</p></div>
         </div>
-        <button class="launch-btn" onclick="enableExplorer()">🚀 Launch Interactive Explorer</button>
+        <button class="launch-btn" onclick="enableExplorer()">🚀 EXPLORE CLINICAL DATA</button>
     </div>
-    
+
     <div id="display-area" style="display:none;">
-        <div class="card"><div id="plot" style="min-height: 500px;"></div></div>
-        <button id="summary-toggle" class="toggle-btn" onclick="toggleSummary()">Show Summary Table</button>
-        <div class="card" id="table-card" style="display:none;">
-            <h3 style="color:var(--ephicacy-blue); margin-top:0;">Clinical Summary Table / TLF</h3>
-            <div id="table-box" style="overflow-x: auto;"></div>
-        </div>
+        <div class="card"><div id="plot" style="min-height: 550px;"></div></div>
+        <button id="summary-toggle" class="toggle-btn" onclick="toggleSummary()">SHOW TLF SUMMARY</button>
+        <div class="card" id="table-card" style="display:none;"><div id="table-box"></div></div>
     </div>
 </div>
 
 <script>
 const ALL_DOMAINS = {{ domains|tojson }};
-const ALLOWED_GRP = [
-    'ARM', 'SEX', 'LBNRIND', 'LBCAT', 'VSTEST', 'LBTESTCD', 'DSTERM', 'RACE', 'ETHNIC', 
-    'ARMCD', 'ACTARMCD', 'COUNTRY', 'AETERM', 'AEOUT', 'AESCAN', 'AESCONG', 'AEDISAB', 
-    'AESDTH', 'AESHOSP', 'AESLIFE', 'TRT01A', 'TRT01P', 'EOSSTT', 'RACEGR1', 'AGEGR1', 
-    'SAFFL', 'DTHCAUS', 'DTHADY', 'ACTARM'
-];
+const ALLOWED_GRP = ['ARM', 'SEX', 'LBNRIND', 'LBCAT', 'VSTEST', 'LBTESTCD', 'DSTERM', 'RACE', 'ETHNIC', 'ARMCD', 'ACTARMCD', 'COUNTRY', 'AETERM', 'AEOUT', 'AESCAN', 'AESCONG', 'AEDISAB', 'AESDTH', 'AESHOSP', 'AESLIFE', 'TRT01A', 'TRT01P', 'EOSSTT', 'RACEGR1', 'AGEGR1', 'SAFFL', 'DTHCAUS', 'DTHADY', 'ACTARM'];
 
-let currentId = "";
-let currentCols = [];
-let currentNumCols = [];
+let currentId = "", currentCols = [], currentNumCols = [];
+
+async function doLogin() {
+    const res = await fetch('/login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({username: document.getElementById('user').value, password: document.getElementById('pwd').value})
+    });
+    const data = await res.json();
+    const msg = document.getElementById('status-msg');
+    msg.style.display = 'block';
+    if(data.success) {
+        msg.style.color = '#059669';
+        msg.innerText = '✔ Access Verified. Opening Terminal...';
+        setTimeout(() => location.reload(), 1000);
+    } else {
+        msg.style.color = '#dc2626';
+        msg.innerText = '✘ ' + data.message;
+    }
+}
 
 function updateTabs() {
     const std = document.getElementById('std-select').value;
-    const container = document.getElementById('tab-list');
-    container.innerHTML = Object.entries(ALL_DOMAINS[std]).map(([id, label]) => 
+    document.getElementById('tab-list').innerHTML = Object.entries(ALL_DOMAINS[std]).map(([id, label]) => 
         `<div class="tab" id="tab-${id}" onclick="selectDomain('${id}')">${label}</div>`
     ).join('');
 }
@@ -133,36 +165,30 @@ function updateDropdowns(domainId) {
     const ySelect = document.getElementById('sel-y');
     const grpSelect = document.getElementById('sel-grp');
     
-    // REMOVED SUBJID AND DSSPID FROM X-AXIS AND DROPDOWNS
     const junk = ['SEQ', 'STUDYID', 'DOMAIN', 'USUBJID', 'DSSPID', 'SUBJID'];
-    let cleanCols = currentCols.filter(c => !junk.some(j => c.includes(j)));
-    let numOnly = currentNumCols.filter(c => !c.includes('VISIT') && !c.includes('DY'));
-    
-    let grpOptions = cleanCols.filter(c => ALLOWED_GRP.includes(c));
+    let clean = currentCols.filter(c => !junk.some(j => c.includes(j)));
+    let num = currentNumCols.filter(c => !c.includes('VISIT') && !c.includes('DY'));
+    let grps = clean.filter(c => ALLOWED_GRP.includes(c));
 
-    let charts = [{v:'box', t:'Box Plot'}, {v:'line', t:'Line Chart'}, {v:'hist', t:'Bar Chart'}, {v:'pie', t:'Pie Chart'}];
+    let charts = [{v:'box', t:'Box Plot (Distribution)'}, {v:'line', t:'Line Chart (Trends)'}, {v:'hist', t:'Frequency Bar'}, {v:'pie', t:'Proportions Pie'}];
     if (['DM','ADSL','AE','ADAE'].includes(domainId.toUpperCase())) charts = charts.filter(c => c.v !== 'line');
     
     plotSelect.innerHTML = charts.map(c => `<option value="${c.v}">${c.t}</option>`).join("");
-    xSelect.innerHTML = cleanCols.map(c => `<option value="${c}">${c}</option>`).join("");
-    ySelect.innerHTML = numOnly.map(c => `<option value="${c}">${c}</option>`).join("");
-    grpSelect.innerHTML = `<option value="NONE">-- None --</option>` + grpOptions.map(c => `<option value="${c}">${c}</option>`).join("");
+    xSelect.innerHTML = clean.map(c => `<option value="${c}">${c}</option>`).join("");
+    ySelect.innerHTML = num.map(c => `<option value="${c}">${c}</option>`).join("");
+    grpSelect.innerHTML = `<option value="NONE">-- No Stratification --</option>` + grps.map(c => `<option value="${c}">${c}</option>`).join("");
 
-    if (grpOptions.includes('ARM')) grpSelect.value = 'ARM';
-    else if (grpOptions.includes('TRTP')) grpSelect.value = 'TRTP';
+    if (grps.includes('ARM')) grpSelect.value = 'ARM';
+    else if (grps.includes('TRTP')) grpSelect.value = 'TRTP';
 
-    if (domainId.toUpperCase() === 'VS') {
-        if (numOnly.includes('VSSTRESN')) ySelect.value = 'VSSTRESN';
-        xSelect.value = 'VISIT';
-    } else if (domainId.toUpperCase() === 'LB') {
-        if (numOnly.includes('LBSTRESN')) ySelect.value = 'LBSTRESN';
-        xSelect.value = 'VISIT';
-    }
+    if (domainId.toUpperCase() === 'VS') { ySelect.value = 'VSSTRESN'; xSelect.value = 'VISIT'; }
+    else if (domainId.toUpperCase() === 'LB') { ySelect.value = 'LBSTRESN'; xSelect.value = 'VISIT'; }
 }
 
 function onPlotTypeChange() {
     const type = document.getElementById('plot-type').value;
     document.getElementById('y-container').style.display = (type === 'box' || type === 'line') ? 'block' : 'none';
+    document.getElementById('line-filters').style.display = (type === 'line') ? 'block' : 'none';
     refresh();
 }
 
@@ -171,21 +197,22 @@ function toggleSummary() {
     const btn = document.getElementById('summary-toggle');
     if (card.style.display === 'none') {
         card.style.display = 'block';
-        btn.innerText = "Hide Summary Table";
+        btn.innerText = "HIDE TLF SUMMARY";
         btn.classList.add('active');
     } else {
         card.style.display = 'none';
-        btn.innerText = "Show Summary Table";
+        btn.innerText = "SHOW TLF SUMMARY";
         btn.classList.remove('active');
     }
 }
 
 async function refresh() {
-    const type = document.getElementById('plot-type').value;
+    const t = document.getElementById('plot-type').value;
     const x = document.getElementById('sel-x').value;
     const y = document.getElementById('sel-y').value;
-    const grp = document.getElementById('sel-grp').value;
-    const res = await fetch(`/get_analysis/${currentId}?x=${x}&y=${y}&grp=${grp}&type=${type}`);
+    const g = document.getElementById('sel-grp').value;
+    const n = document.getElementById('no-unsched').checked;
+    const res = await fetch(`/get_analysis/${currentId}?x=${x}&y=${y}&grp=${g}&type=${t}&no_unsched=${n}`);
     const data = await res.json();
     if (data.plots) Plotly.newPlot('plot', JSON.parse(data.plots[0]), {responsive: true});
     document.getElementById('table-box').innerHTML = data.table || "";
