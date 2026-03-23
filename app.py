@@ -16,7 +16,7 @@ class CustomJSONProvider(DefaultJSONProvider):
         return super().default(obj)
 
 app = Flask(__name__)
-app.secret_key = "ephicacy_pharmasug_2026_pro"
+app.secret_key = "pharmasug_2026_final_pro"
 app.json = CustomJSONProvider(app)
 
 DATA_PATH = "./SDTM_ADAM_SAS/"
@@ -69,7 +69,7 @@ def login():
     if data.get("username") == "Python_Ephicacy" and data.get("password") == "admin":
         session["logged_in"] = True
         return jsonify({"success": True})
-    return jsonify({"success": False, "message": "Access Denied: Invalid Credentials"})
+    return jsonify({"success": False, "message": "Access Denied: Please verify credentials."})
 
 @app.route("/logout")
 def logout():
@@ -97,7 +97,12 @@ def get_analysis(dataset):
     
     df = load_data(dataset)
     if df is None: return jsonify({"error": "Data error"})
-    grp = None if grp == "NONE" else grp
+    
+    # Force Grouping to None if Pie Chart is selected
+    if chart_type == "pie":
+        grp = None
+    else:
+        grp = None if grp == "NONE" else grp
     
     param_col = next((c for c in [f"{dataset.upper()}TESTCD", "PARAMCD"] if c in df.columns), None)
 
@@ -113,27 +118,25 @@ def get_analysis(dataset):
             top_p = plot_df[param_col].value_counts().nlargest(6).index
             plot_df = plot_df[plot_df[param_col].isin(top_p)]
 
-        # DYNAMIC TITLE LOGIC
-        main_title = f"{'Longitudinal Trends' if chart_type=='line' else 'Distribution'} of {y} by {grp if grp else 'Total'}"
-        
         if chart_type == "box":
+            main_title = f"<b>Distribution Analysis</b>: {y} across {x}"
             fig = px.box(plot_df, x=x, y=y, color=grp, facet_col=param_col, facet_col_wrap=3, title=main_title)
         else: # Line
+            main_title = f"<b>Temporal Analysis</b>: Mean {y} over Clinical Visits"
             s_col = next((c for c in ["AVISITN", "VISITNUM", "ADY"] if c in plot_df.columns), None)
             l_df = plot_df.groupby([c for c in [s_col, x, grp, param_col] if c])[y].mean().reset_index()
             if s_col: l_df = l_df.sort_values(s_col)
             fig = px.line(l_df, x=x, y=y, color=grp, facet_col=param_col, facet_col_wrap=3, markers=True, title=main_title)
 
         fig.update_yaxes(matches=None)
-        fig.for_each_annotation(lambda a: a.update(text=f"<b>{a.text.split('=')[-1]}</b>"))
+        fig.for_each_annotation(lambda a: a.update(text=f"<span style='color:#004a99; font-weight:bold;'>{a.text.split('=')[-1]}</span>"))
         
-        # IMPROVED LOOK AND FEEL: Legend and Font sizing
         fig.update_layout(
             template="plotly_white",
             height=750 if param_col else 550,
-            title_font=dict(size=20, color='#004a99'),
-            legend=dict(font=dict(size=14), orientation="v", yanchor="top", y=1, xanchor="left", x=1.02),
-            margin=dict(r=150, t=80, l=50, b=50) 
+            title_font=dict(size=22, color='#004a99'),
+            legend=dict(font=dict(size=15), borderwidth=1, bordercolor="#e2e8f0", bgcolor="rgba(255,255,255,0.8)", orientation="v", yanchor="top", y=1, xanchor="left", x=1.02),
+            margin=dict(r=160, t=100, l=60, b=60) 
         )
         summary_html = get_clinical_summary(plot_df, [c for c in [param_col, grp, x] if c], y)
         return jsonify({"plots": [pio.to_json(fig)], "table": summary_html})
@@ -141,13 +144,19 @@ def get_analysis(dataset):
         # Bar/Pie logic
         t_col = x if x else (param_col if param_col else df.columns[0])
         counts = df.groupby([grp, t_col]).size().reset_index(name='Count') if grp else df.groupby([t_col]).size().reset_index(name='Count')
-        title = f"Frequency Analysis: {t_col}"
-        fig = px.pie(df, names=t_col, title=title) if chart_type == "pie" else px.bar(counts.head(20), x=t_col, y="Count", color=grp, barmode="group", title=title)
+        
+        if chart_type == "pie":
+            title = f"<b>Proportional Composition</b>: {t_col}"
+            fig = px.pie(df, names=t_col, title=title)
+        else:
+            title = f"<b>Incidence Analysis</b>: {t_col} Frequency"
+            fig = px.bar(counts.head(20), x=t_col, y="Count", color=grp, barmode="group", title=title)
         
         fig.update_layout(
             template="plotly_white", 
-            title_font=dict(size=20, color='#004a99'),
-            legend=dict(font=dict(size=14))
+            title_font=dict(size=22, color='#004a99'),
+            legend=dict(font=dict(size=15), borderwidth=1, bordercolor="#e2e8f0"),
+            margin=dict(r=160, t=100, l=60, b=60)
         )
         return jsonify({"plots": [pio.to_json(fig)], "table": counts.to_html(classes='summary-table', index=False)})
 
