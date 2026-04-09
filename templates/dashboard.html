@@ -73,12 +73,6 @@
             <label>Analysis Module</label>
             <select id="plot-type" onchange="onPlotTypeChange()"></select>
         </div>
-        
-        <div id="line-filters" style="display:none; margin-bottom:15px;">
-            <label style="color:#dc2626; display:flex; align-items:center; cursor:pointer;">
-                <input type="checkbox" id="no-unsched" onchange="refresh()"> &nbsp; 🚫 Filter Unscheduled Noise
-            </label>
-        </div>
 
         <div class="control-group" id="grp-container">
             <label>Stratification</label>
@@ -207,9 +201,6 @@ function onPlotTypeChange() {
     // Toggle Y-Axis container visibility
     document.getElementById('y-container').style.display = (type === 'box' || type === 'line') ? 'block' : 'none';
     
-    // Toggle Line filter visibility
-    document.getElementById('line-filters').style.display = (type === 'line') ? 'block' : 'none';
-    
     // Toggle Stratification (Group By) visibility based on Pie Chart
     document.getElementById('grp-container').style.display = (type === 'pie') ? 'none' : 'block';
     
@@ -235,9 +226,8 @@ async function refresh() {
     const x = document.getElementById('sel-x').value;
     const y = document.getElementById('sel-y').value;
     const g = document.getElementById('sel-grp').value;
-    const n = document.getElementById('no-unsched').checked;
     
-    const res = await fetch(`/get_analysis/${currentId}?x=${x}&y=${y}&grp=${g}&type=${t}&no_unsched=${n}`);
+    const res = await fetch(`/get_analysis/${currentId}?x=${x}&y=${y}&grp=${g}&type=${t}`);
     const data = await res.json();
     if (data.plots) Plotly.newPlot('plot', JSON.parse(data.plots[0]), {responsive: true});
     document.getElementById('table-box').innerHTML = data.table || "";

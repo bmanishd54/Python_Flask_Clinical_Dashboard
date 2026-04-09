@@ -93,7 +93,7 @@ def get_analysis(dataset):
     if not session.get("logged_in"): return jsonify({"error": "Auth required"})
     
     x, y, grp = request.args.get('x'), request.args.get('y'), request.args.get('grp')
-    chart_type, no_unsched = request.args.get('type'), request.args.get('no_unsched') == 'true'
+    chart_type = request.args.get('type')
     
     df = load_data(dataset)
     if df is None: return jsonify({"error": "Data error"})
@@ -109,10 +109,6 @@ def get_analysis(dataset):
     if chart_type in ["box", "line"] and y and y in df.columns:
         df[y] = pd.to_numeric(df[y], errors='coerce')
         plot_df = df.dropna(subset=[y]).copy()
-
-        if no_unsched:
-            v_col = next((c for c in ["VISIT", "AVISIT"] if c in plot_df.columns), None)
-            if v_col: plot_df = plot_df[~plot_df[v_col].str.contains('unsched', case=False, na=False)]
 
         if param_col:
             top_p = plot_df[param_col].value_counts().nlargest(6).index
